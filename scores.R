@@ -1,4 +1,7 @@
 getPoints <- function(player) {
+    ## Required libraries
+    require(XML)
+    
     ## Scrape score table from nhl website
     url <- player[,4]
     doc <- htmlParse(url)
@@ -10,10 +13,7 @@ getPoints <- function(player) {
     return(as.numeric(points))
 }
 
-hockeyPool <- function(path) {
-    ## Required libraries
-    library(XML)
-    
+hockeyPool <- function(path=".") {
     ## Read player and team info
     teams <- read.csv(paste(path, "teams.csv", sep=""), stringsAsFactors=FALSE)
     player_list <- read.csv(paste(path, "players.csv", sep=""), stringsAsFactors=FALSE)
@@ -23,6 +23,7 @@ hockeyPool <- function(path) {
     
     ## Get scores for each player on each team
     for(i in 1:ncol(teams)) {
+        message(paste("Fetching scores for", names(teams[i])))
         scores <- data.frame("Player"=1:nrow(teams[i]), "Points"=1:nrow(teams[i]))
         
         for(j in 1:nrow(teams[i])) {
@@ -36,6 +37,7 @@ hockeyPool <- function(path) {
         
         team_scores[i, 2] <- sum(scores[,2])
         
+        ## Print individual scores
         # print(names(teams[i]))
         # print(scores)
         # cat("\n")
@@ -43,7 +45,8 @@ hockeyPool <- function(path) {
     
     ## Print leaderboard
     team_scores <- team_scores[order(team_scores$Points, decreasing=TRUE), ]
-    # print(team_scores)
+    print(team_scores)
     outfile <- paste(path, "scores_", Sys.Date(), ".txt", sep="")
-    write.table(team_scores, outfile, row.names=FALSE, col.names=FALSE)   
+    write.table(team_scores, outfile, row.names=FALSE, col.names=FALSE)  
+    message(paste("score.txt created in:", path))
 }
